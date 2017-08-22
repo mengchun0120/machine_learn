@@ -4,6 +4,7 @@
 
 BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_idx,
                              double wind_prob, int wind_direct):
+    Game(BOARD_SIZE, 4),
     rd_(),
     dis_(0.0, 1.0)
 {
