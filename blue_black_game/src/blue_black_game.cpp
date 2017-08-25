@@ -11,7 +11,7 @@ BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_i
     if(!valid_pos_idx(blue_pos_idx) || !valid_pos_idx(hole_pos_idx) || !valid_pos_idx(start_pos_idx)) {
         throw std::runtime_error("Invalid blue_pos_idx or hole_pos_idx or start_pos_idx");
     }
-    
+
     if(blue_pos_idx == hole_pos_idx || blue_pos_idx == start_pos_idx || hole_pos_idx == start_pos_idx) {
         throw std::runtime_error("Overlapping blue_pos_idx, hole_pos_idx or start_pos_idx");
     }
@@ -23,7 +23,7 @@ BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_i
     if(wind_prob <= 0.0 && wind_prob > 1.0) {
         throw std::runtime_error("Invalid wind_prob");
     }
-    
+
     wind_prob_ = wind_prob;
 
     reset();
@@ -33,7 +33,7 @@ void BlueBlackGame::reset()
 {
     gen_.seed(rd_());
     cur_pos_ = start_pos_;
-    playable = true;
+    playable_ = true;
 }
 
 bool BlueBlackGame::action(int act, double& reward, int& next_state)
@@ -42,12 +42,12 @@ bool BlueBlackGame::action(int act, double& reward, int& next_state)
         throw std::runtime_error("Invalid act");
     }
 
-    if(!playable) {
+    if(!playable_) {
        return false;
     }
 
     move_cur_pos(act);
-    if(dis_() < wind_prob_) {
+    if(dis_(gen_) < wind_prob_) {
         move_cur_pos(wind_direct_);
     }
 
@@ -92,4 +92,3 @@ void BlueBlackGame::move_cur_pos(int act)
         std::cerr << "Invalid act(" << act << ")\n";
     }
 }
-

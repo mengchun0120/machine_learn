@@ -15,7 +15,7 @@ Agent::Agent(Game *game):
 
 Agent::~Agent()
 {
-    for(int i = 0; i < game_->num_num_states(); ++i) {
+    for(int i = 0; i < game_->num_states(); ++i) {
         delete[] q_values_[i];
     }
     delete[] q_values_;
@@ -24,9 +24,9 @@ Agent::~Agent()
 void Agent::learn(int num_episodes, double learn_rate, double greedy_prob)
 {
     for(int episode = 0; episode < num_episodes; ++episode) {
-        game->reset();
+        game_->reset();
         while(true) {
-            
+
         }
     }
 }
@@ -50,7 +50,7 @@ int Agent::select_action(double greedy_prob)
         greedy_act = act_dis_(gen_);
     } else {
         double *q = q_values_[game_->cur_state()];
-        double max_q = q_[0];
+        double max_q = q[0];
         greedy_act = 0;
         for(int i = 1; i < game_->num_actions(); ++i) {
             if(max_q < q[i]) {
@@ -61,4 +61,3 @@ int Agent::select_action(double greedy_prob)
     }
     return greedy_act;
 }
-

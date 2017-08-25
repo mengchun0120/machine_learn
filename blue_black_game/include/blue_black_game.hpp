@@ -5,9 +5,17 @@
 #include "game.hpp"
 
 struct Point {
-    Point(int x=0, int y=0): this->x(x), this->y(y) {}
+    Point(int x=0, int y=0)
+    {
+        this->x = x;
+        this->y = y;
+    }
 
-    Point(const Point& p): x(p.x), y(p.y) {}
+    Point(const Point& p):
+        x(p.x), y(p.y)
+    {
+
+    }
 
     Point& operator=(const Point& p)
     {
@@ -40,7 +48,7 @@ public:
 
     static bool valid_pos_idx(int pos_idx)
     {
-        return pos >= 0 && pos < BOARD_SIZE;
+        return pos_idx >= 0 && pos_idx < BOARD_SIZE;
     }
 
     static Point to_point(int pos_idx)
@@ -61,16 +69,16 @@ public:
         return act >= UP && act <= LEFT;
     }
 
-    BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_idx, 
+    BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_idx,
                   double wind_prob, int wind_direct);
 
     void reset();
 
-    bool action(int act, double& reward, int& next_state); 
+    bool action(int act, double& reward, int& next_state);
 
 protected:
     Point blue_pos_;
-    Point hold_pos_;
+    Point hole_pos_;
     Point start_pos_;
     Point cur_pos_;
     double wind_prob_;
@@ -84,4 +92,3 @@ protected:
 };
 
 #endif
- 
