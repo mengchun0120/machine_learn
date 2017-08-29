@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <exception>
+#include <stdexcept>
 #include <math.h>
 #include "agent.hpp"
 #include "game.hpp"
@@ -156,10 +156,10 @@ void Agent::play_one_episode(GameFunc f)
     double reward;
 
     game_->reset();
-    cur_state = game->cur_state();
+    cur_state = game_->cur_state();
     do {
         act = select_action_greedily(cur_state);
-        playable = game->action(cur_state, act, reward, next_state);
+        playable = game_->action(act, reward, next_state);
         if(f) f(cur_state, act, reward, next_state);
         cur_state = next_state;
     } while(playable);
@@ -179,6 +179,7 @@ int Agent::select_action(int cur_state, double greedy_prob, bool debug)
             std::cout << "select random act=" << act << std::endl;
         }
     }
+    return act;
 }
 
 int Agent::select_action_greedily(int cur_state)
