@@ -11,7 +11,7 @@ public:
     virtual void reset() = 0;
 
     virtual bool action(int act, double& reward, int& next_state) = 0;
-    
+
     int num_states() const
     {
         return num_states_;
@@ -23,7 +23,7 @@ public:
     }
 
     virtual int cur_state() const = 0;
-    
+
 protected:
     int num_states_;
     int num_actions_;

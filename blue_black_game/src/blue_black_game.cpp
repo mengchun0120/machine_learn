@@ -47,6 +47,7 @@ bool BlueBlackGame::action(int act, double& reward, int& next_state)
     }
 
     move_cur_pos(act);
+
     if(dis_(gen_) < wind_prob_) {
         move_cur_pos(wind_direct_);
     }

@@ -76,6 +76,11 @@ public:
 
     bool action(int act, double& reward, int& next_state);
 
+    int cur_state() const
+    {
+        return to_pos_idx(cur_pos_);
+    }
+
 protected:
     Point blue_pos_;
     Point hole_pos_;
