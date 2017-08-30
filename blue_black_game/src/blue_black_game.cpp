@@ -1,19 +1,26 @@
-#include <stdexcept>    
+#include <stdexcept>
 #include <iostream>
-#include "blue_black_game.hpp"
+#include <blue_black_game.hpp>
 
-BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_idx,
-                             double wind_prob, int wind_direct):
+BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx,
+                             int start_pos_idx, double wind_prob,
+                             int wind_direct):
     Game(BOARD_SIZE, 4),
     rd_(),
     dis_(0.0, 1.0)
 {
-    if(!valid_pos_idx(blue_pos_idx) || !valid_pos_idx(hole_pos_idx) || !valid_pos_idx(start_pos_idx)) {
-        throw std::runtime_error("Invalid blue_pos_idx or hole_pos_idx or start_pos_idx");
+    if(!valid_pos_idx(blue_pos_idx) ||
+       !valid_pos_idx(hole_pos_idx) ||
+       !valid_pos_idx(start_pos_idx)) {
+        throw std::runtime_error("Invalid blue_pos_idx or hole_pos_idx"
+                                 " or start_pos_idx");
     }
 
-    if(blue_pos_idx == hole_pos_idx || blue_pos_idx == start_pos_idx || hole_pos_idx == start_pos_idx) {
-        throw std::runtime_error("Overlapping blue_pos_idx, hole_pos_idx or start_pos_idx");
+    if(blue_pos_idx == hole_pos_idx ||
+       blue_pos_idx == start_pos_idx ||
+       hole_pos_idx == start_pos_idx) {
+        throw std::runtime_error("Overlapping blue_pos_idx, hole_pos_idx"
+                                 " or start_pos_idx");
     }
 
     blue_pos_ = to_point(blue_pos_idx);

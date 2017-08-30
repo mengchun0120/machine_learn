@@ -1,18 +1,28 @@
 INCLUDE_DIR = include
 SRC_DIR = src
-BUILD_DIR = build
+SRC_BUILD_DIR = build/src
+TEST_DIR = test
+TEST_BUILD_DIR = build/test
 CPP_FLAGS = -std=c++11 -O3 -I$(INCLUDE_DIR) -Wall
-OBJECTS = $(BUILD_DIR)/game.o $(BUILD_DIR)/blue_black_game.o \
-	$(BUILD_DIR)/agent.o
-TARGET = $(BUILD_DIR)/bbgame.bin
+OBJECTS = $(SRC_BUILD_DIR)/game.o $(SRC_BUILD_DIR)/blue_black_game.o \
+          $(SRC_BUILD_DIR)/agent.o $(SRC_BUILD_DIR)/utils.o
+TARGET = $(SRC_BUILD_DIR)/bbgame
+TEST_TARGETS = $(TEST_BUILD_DIR)/test_utils
 
-all: $(TARGET)
+all: $(TARGET) test
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp
+$(SRC_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp
 	g++ -c $(CPP_FLAGS) -o $@ $<
 
 $(TARGET): $(SRC_DIR)/main.cpp $(OBJECTS)
 	g++ $(CPP_FLAGS) -o $@ $^
 
+$(TEST_BUILD_DIR)/%: $(TEST_DIR)/%.cpp $(OBJECTS)
+	g++ $(CPP_FLAGS) -o $@ $^
+
+test: $(TEST_TARGETS)
+	./run_test.sh
+
 clean:
-	rm -f build/*
+	rm -f build/src/* build/test/*
+

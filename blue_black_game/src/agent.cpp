@@ -2,8 +2,8 @@
 #include <fstream>
 #include <stdexcept>
 #include <math.h>
-#include "agent.hpp"
-#include "game.hpp"
+#include <agent.hpp>
+#include <game.hpp>
 
 Agent::Agent(Game *game, double q_init_max):
     game_(game),

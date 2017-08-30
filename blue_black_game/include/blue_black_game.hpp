@@ -2,7 +2,7 @@
 #define __BLUE_BLACK_GAME_HPP__
 
 #include <random>
-#include "game.hpp"
+#include <game.hpp>
 
 struct Point {
     Point(int x=0, int y=0)
