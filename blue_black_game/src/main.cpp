@@ -1,22 +1,21 @@
-#include <utils.hpp>
 #include <iostream>
+#include <conf_parser.hpp>
+#include <blue_black_game.hpp>
+#include <agent.hpp>
 
 int main(int argc, char **argv)
 {
-    char s[] = "";
-    strtrim(s);
-    std::cout << "s=\"" << s << "\"" << std::endl;
-
-    char s1[] = " 1234 6789 ";
-    strtrim(s1);
-    std::cout << "s1=\"" << s1 << "\"" << std::endl;
-
-    char s2[] = "123456    ";
-    strtrim(s2);
-    std::cout << "s2=\"" << s2 << "\"" << std::endl;
-
-    char s3[] = "   123";
-    strtrim(s3);
-    std::cout << "s3=\"" << s3 << "\"" << std::endl;
+    char *conf_file = nullptr;
+    char *q_file = nullptr;
+    int num_episodes = -1;
+    double lambda = -1.0;
+    double learn_rate = -1.0;
+    double greedy_prob = -1.0;
+    int debug_steps = -1;
+    int blue_pos_idx = -1;
+    int hole_pos_idx = -1;
+    int start_pos_idx = -1;
+    double wind_prob = -1.0;
+    int wind_direct = -1;
 }
 

@@ -2,34 +2,53 @@
 #define __CONF_PARSER_HPP__
 
 #include <fstream>
+#include <vector>
+#include <functional>
+
+struct ParamConfig {
+    static const int KEY_LEN;
+
+    char key[50];
+    char type[2];
+    bool mandatory;
+    void *buffer;
+    std::function<bool(ParamConfig *p)> check_func;
+};
 
 class ConfParser {
 public:
-    static const int MAX_LINE_LEN;
-    static const int MAX_KEY_LEN;
-    static const int MAX_VAL_LEN;
+    static constexpr int MAX_LINE_LEN;
+    static constexpr int MAX_KEY_LEN;
+    static constexpr int MAX_VAL_LEN;
+    static std::vector<const char *> SUPPORTED_TYPES;
+    static constexpr int NUM_SUPPORTED_TYPES;
 
-    ConfParser(const char *conf_file);
+    static bool check_type(const char *type);
+
+    ConfParser(const std::vector<ParamConfig> *configs);
 
     virtual ~ConfParser();
 
-    bool next();
-
-    const char *key() const
-    {
-        return key_;
-    }
-
-    const char *val() const
-    {
-        return val_;
-    }
+    void read_config(const char *conf_file);
 
 protected:
-    char *line_;
-    char *key_;
-    char *val_;
-    std::ifstream is_;
+    char line_[MAX_LINE_LEN];
+    char key_[MAX_KEY_LEN];
+    char val_[MAX_VAL_LEN];
+    const std::vector<ParamConfig> *configs_;
+    std::vector<bool> read_;
+
+    bool next(std::ifstream& is);
+
+    void reset();
+
+    void check_configs();
+
+    ParamConfig *find_config(const char *key);
+
+    void assign_value(ParamConfig *cfg);
+
+    void check_read();
 };
 
 #endif
