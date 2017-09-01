@@ -5,9 +5,6 @@
 #include <utils.hpp>
 #include <conf_parser.hpp>
 
-constexpr int ConfParser::MAX_LINE_LEN = 1000;
-constexpr int ConfParser::MAX_KEY_LEN = 200;
-constexpr int ConfParser::MAX_VAL_LEN = 800;
 std::vector<const char *> ConfParser::SUPPORTED_TYPES{"c", "d", "i"};
 
 bool ConfParser::check_type(const char *type)
@@ -25,7 +22,7 @@ bool ConfParser::check_type(const char *type)
 }
 
 
-ConfParser::ConfParser(const std::vector<ParamConfig> *configs):
+ConfParser::ConfParser(std::vector<ParamConfig> *configs):
     configs_(configs)
 {
     if(!configs_) {
@@ -40,7 +37,7 @@ ConfParser::~ConfParser()
 {
 }
 
-void ConfParser::read(const char *conf_file)
+void ConfParser::read_config(const char *conf_file)
 {
     reset();
 
@@ -54,6 +51,13 @@ void ConfParser::read(const char *conf_file)
         }
 
         assign_value(cfg);
+
+        if(cfg->check_func) {
+            if(!cfg->check_func(cfg)) {
+                throw std::runtime_error("Invalid param");
+            }
+        }
+
         read_[i] = true;
     }
 
@@ -96,7 +100,7 @@ bool ConfParser::next(std::ifstream& is)
 
 void ConfParser::reset()
 {
-    std::copy(read_.begin(), read_.end(), false);
+    std::fill(read_.begin(), read_.end(), false);
 }
 
 
@@ -138,19 +142,19 @@ ParamConfig *ConfParser::find_config(const char *key)
 void ConfParser::assign_value(ParamConfig *cfg)
 {
     if(strcmp(cfg->type, "c") == 0) {
-        strcpy(reinterpret_cast<char *>(cfg->buffer), val);
+        strcpy(reinterpret_cast<char *>(cfg->buffer), val_);
     } else if(strcmp(cfg->type, "d") == 0) {
-        *reinterpret_cast<double *>(cfg->buffer) = atof(val);
+        *reinterpret_cast<double *>(cfg->buffer) = atof(val_);
     } else if(strcmp(cfg->type, "i") == 0) {
-        *reinterpret_cast<int *>(cfg->buffer) = atoi(val);
+        *reinterpret_cast<int *>(cfg->buffer) = atoi(val_);
     }
 }
 
 void ConfParser::check_read()
 {
-    for(int i = 0; i < read_.size(); ++i) {
+    for(unsigned int i = 0; i < read_.size(); ++i) {
         if((*configs_)[i].mandatory && !read_[i]) {
-            throw runtime_error("Mandatory param not read");
+            throw std::runtime_error("Mandatory param not read");
         }
     }
 }

@@ -17,15 +17,14 @@ struct ParamConfig {
 
 class ConfParser {
 public:
-    static constexpr int MAX_LINE_LEN;
-    static constexpr int MAX_KEY_LEN;
-    static constexpr int MAX_VAL_LEN;
+    static constexpr int MAX_LINE_LEN = 1000;
+    static constexpr int MAX_KEY_LEN = 200;
+    static constexpr int MAX_VAL_LEN = 500;
     static std::vector<const char *> SUPPORTED_TYPES;
-    static constexpr int NUM_SUPPORTED_TYPES;
 
     static bool check_type(const char *type);
 
-    ConfParser(const std::vector<ParamConfig> *configs);
+    ConfParser(std::vector<ParamConfig> *configs);
 
     virtual ~ConfParser();
 
@@ -35,7 +34,7 @@ protected:
     char line_[MAX_LINE_LEN];
     char key_[MAX_KEY_LEN];
     char val_[MAX_VAL_LEN];
-    const std::vector<ParamConfig> *configs_;
+    std::vector<ParamConfig> *configs_;
     std::vector<bool> read_;
 
     bool next(std::ifstream& is);
