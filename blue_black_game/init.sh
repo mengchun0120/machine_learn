@@ -3,6 +3,8 @@
 dir_list="build build/src build/test"
 
 for dir in $dir_list; do
-    mkdir "$dir"
+    if [ ! -d "$dir" ]; then
+        mkdir "$dir"
+    fi
 done
 

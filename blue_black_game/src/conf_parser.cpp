@@ -5,14 +5,14 @@
 #include <utils.hpp>
 #include <conf_parser.hpp>
 
-std::vector<const char *> ConfParser::SUPPORTED_TYPES{"c", "d", "i"};
+std::vector<const char *> ConfParser::SUP_TYPES{"c", "d", "i"};
 
 bool ConfParser::check_type(const char *type)
 {
     bool valid = false;
 
-    for(auto i = SUPPORTED_TYPES.begin(); i != SUPPORTED_TYPES.end(); ++i) {
-        if(strcmp(*i, type) == 0) {
+    for(unsigned int i = 0; i < SUP_TYPES.size(); ++i)    {
+        if(strcmp(SUP_TYPES[i], type) == 0) {
             valid = true;
             break;
         }
@@ -52,8 +52,8 @@ void ConfParser::read_config(const char *conf_file)
 
         assign_value(cfg);
 
-        if(cfg->check_func) {
-            if(!cfg->check_func(cfg)) {
+        if(cfg->check) {
+            if(!cfg->check(cfg)) {
                 throw std::runtime_error("Invalid param");
             }
         }
@@ -158,4 +158,3 @@ void ConfParser::check_read()
         }
     }
 }
-
