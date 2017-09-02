@@ -22,7 +22,7 @@ $(TEST_BUILD_DIR)/%: $(TEST_DIR)/%.cpp $(OBJECTS)
 	g++ $(CPP_FLAGS) -o $@ $^
 
 test: $(TEST_TARGETS)
-	./run_test.sh
+	sh ./run_test.sh
 
 clean:
 	rm -f build/src/* build/test/*
