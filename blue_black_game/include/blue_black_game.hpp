@@ -42,9 +42,26 @@ public:
         LEFT
     };
 
+    struct Config {
+        Config(const char *conf_file);
+
+        void init(const char *conf_file);
+
+        int board_width;
+        int board_height;
+        Point blue_pos;
+        Point hole_pos;
+        Point start_pos;
+        double wind_prob;
+        char wind_direct[10];
+    };
+
+    static bool valid_direct(const void *direct);
+
     constexpr static int BOARD_WIDTH = 4;
     constexpr static int BOARD_HEIGHT = 4;
-    constexpr static int BOARD_SIZE = BOARD_WIDTH * BOARD_HEIGHT;
+    constexpr static int BOARD_SIZE =
+                                BOARD_WIDTH * BOARD_HEIGHT;
 
     static bool valid_pos_idx(int pos_idx)
     {
