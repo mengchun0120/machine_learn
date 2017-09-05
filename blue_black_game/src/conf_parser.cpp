@@ -31,7 +31,7 @@ void ConfParser::read_config(const char *conf_file)
             throw std::runtime_error("Unrecognized key");
         }
 
-       cfg->read_val(val_);
+        cfg->read_val(val_);
     }
 
     check_read();

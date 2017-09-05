@@ -12,79 +12,40 @@ BlueBlackGame::Config::Config(const char *conf_file)
 void BlueBlackGame::Config::init(const char *conf_file)
 {
    std::vector<ParamConfig> cfgs{
-        ParamConfig("board_width",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_width),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("blue_pos_x",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&blue_pos.x),
-                    lbound_check<int,false>(0)),
-        ParamConfig("blue_pos_y",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&blue_pos.y),
-                    lbound_check<int,false>(0)),
-        ParamConfig("hole_pos_x",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&hole_pos.x),
-                    lbound_check<int,false>(0)),
-        ParamConfig("hole_pos_y",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&hole_pos.y),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-        ParamConfig("board_height",
-                    ParamConfig::INT_PARAM,
-                    true,
-                    reinterpret_cast<void *>(&board_height),
-                    lbound_check<int,false>(0)),
-
-
-
-
-
-
-
-
-
-
-
-
+        ParamConfig("board_width", ParamConfig::INT_PARAM,
+            true,reinterpret_cast<void *>(&board_width),
+            lbound_check<int,false>(0)),
+        ParamConfig("board_height", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&board_height),
+            lbound_check<int,false>(0)),
+        ParamConfig("blue_pos_x", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&blue_pos.x),
+            lbound_check<int,false>(0)),
+        ParamConfig("blue_pos_y", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&blue_pos.y),
+            lbound_check<int,false>(0)),
+        ParamConfig("hole_pos_x", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&hole_pos.x),
+            lbound_check<int,false>(0)),
+        ParamConfig("hole_pos_y", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&hole_pos.y),
+            lbound_check<int,false>(0)),
+        ParamConfig("start_pos_x", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&board_height),
+            lbound_check<int,false>(0)),
+        ParamConfig("start_pos_y", ParamConfig::INT_PARAM,
+            true, reinterpret_cast<void *>(&board_height),
+            lbound_check<int,false>(0)),
+        ParamConfig("wind_prob", ParamConfig::DOUBLE_PARAM,
+            true, reinterpret_cast<void *>(&board_height),
+            lbound_check<double,false>(0.0) &&
+            ubound_check<double,false>(1.0)),
+        ParamConfig("wind_direct", ParamConfig::STRING_PARAM,
+            true, reinterpret_cast<void *>(&board_height))
     };
+
+    ConfParser parser(&cfgs);
+    parser.read_config(conf_file);
 }
 
 bool BlueBlackGame::valid_direct(const void *direct)
