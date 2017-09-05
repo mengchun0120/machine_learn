@@ -10,7 +10,8 @@ OBJECTS = $(SRC_BUILD_DIR)/game.o \
           $(SRC_BUILD_DIR)/utils.o \
           $(SRC_BUILD_DIR)/check_func.o \
           $(SRC_BUILD_DIR)/param_config.o \
-          $(SRC_BUILD_DIR)/conf_parser.o
+          $(SRC_BUILD_DIR)/conf_parser.o \
+          $(SRC_BUILD_DIR)/agent_config.o
 TARGET = $(SRC_BUILD_DIR)/bbgame
 TEST_TARGETS = $(TEST_BUILD_DIR)/test_utils \
                $(TEST_BUILD_DIR)/test_conf_parser

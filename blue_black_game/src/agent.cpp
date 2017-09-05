@@ -1,18 +1,19 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 #include <math.h>
 #include <agent.hpp>
 #include <game.hpp>
+#include <agent_config.hpp>
 
-Agent::Agent(Game *game, double q_init_max):
+Agent::Agent(Game *game):
     game_(game),
     num_states_(game->num_states()),
     num_actions_(game->num_actions()),
     rd_(),
     greedy_act_dis_(0.0, 1.0),
-    random_act_dis_(0, num_actions_-1),
-    q_dis_(-q_init_max, q_init_max)
+    random_act_dis_(0, num_actions_-1)
 {
     alloc_q();
 }
@@ -38,37 +39,32 @@ void Agent::release_q()
     delete[] q_values_;
 }
 
-void Agent::init_q()
+void Agent::init_q(double q_max)
 {
+    std::mt19937 g(rd_());
+    std::uniform_real_distribution<> dis(-q_max, q_max);
+
     for(int i = 0; i < num_states_; ++i) {
         double *q = q_values_[i];
         for(int j = 0; j < num_actions_; ++j, ++q) {
-            *q = q_dis_(gen_);
+            *q = dis(g);
         }
     }
 }
 
-
-void Agent::learn(int num_episodes, double lambda, double learn_rate,
-                  double greedy_prob, int debug_steps, bool random_init)
+void Agent::learn(const AgentConfig *cfg)
 {
     int act, next_state, cur_state;
     double reward;
     bool playable;
 
-    if(greedy_prob <= 0.0 || greedy_prob >= 1.0) {
-        throw std::runtime_error("Agent::learn: Invalid greedy_prob");
-    }
-
-    if(learn_rate <= 0.0) {
-        throw std::runtime_error("Agent::learn: Invalid learn_rate");
-    }
-
-    if(random_init) init_q();
+    if(cfg->random_init) init_q(cfg->q_init_max);
 
     double abs_delta;
 
-    for(int episode = 0; episode < num_episodes; ++episode) {
+    for(int episode = 0; episode < cfg->num_episodes; 
+        ++episode) {
+
         std::cout << "ep " << episode << std::endl;
 
         int num_steps = 0;
@@ -79,23 +75,29 @@ void Agent::learn(int num_episodes, double lambda, double learn_rate,
         do {
             ++num_steps;
 
-            if(debug_steps > 0) {
-                debug = (num_steps % debug_steps) == 0;
+            if(cfg->debug_steps > 0) {
+                debug = (num_steps % cfg->debug_steps) == 0;
             } else {
                 debug = false;
             }
 
-            act = select_action(cur_state, greedy_prob, debug);
+            act = select_action(cur_state, cfg->greedy_prob,
+                                debug);
+
             playable = game_->action(act, reward, next_state);
-            abs_delta = update(cur_state, act, reward, next_state, lambda,
-                               learn_rate, debug || !playable);
+
+            abs_delta = update(cur_state, act, reward,
+                               next_state, cfg->lambda,
+                               cfg->learn_rate,
+                               debug || !playable);
             cur_state = next_state;
         } while(playable && abs_delta > 1.0e-6);
     }
 }
 
-double Agent::update(int cur_state, int action, double reward, int next_state,
-                   double lambda, double learn_rate, bool debug)
+double Agent::update(int cur_state, int action, double reward,
+                     int next_state, double lambda,
+                     double learn_rate, bool debug)
 {
     double *q = q_values_[next_state];
     double max_q = q[0];
@@ -110,7 +112,8 @@ double Agent::update(int cur_state, int action, double reward, int next_state,
     if(debug) {
         std::cout << "update q_values for state=" << cur_state
                   << " act=" << action << " delta=" << delta
-                  << " cur_q=" << q_values_[cur_state][action] << std::endl;
+                  << " cur_q=" << q_values_[cur_state][action]
+                  << std::endl;
     }
 
     return fabs(delta);
@@ -118,12 +121,16 @@ double Agent::update(int cur_state, int action, double reward, int next_state,
 
 void Agent::save_q(const char *file)
 {
-    std::ofstream os(file, std::ios::out | std::ios::binary);
+    std::ofstream os(file,
+                     std::ios::out | std::ios::binary);
 
-    os.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    os.exceptions(std::ofstream::failbit |
+                  std::ofstream::badbit);
 
-    os.write(reinterpret_cast<char *>(&num_states_), sizeof(num_states_));
-    os.write(reinterpret_cast<char *>(&num_actions_), sizeof(num_actions_));
+    os.write(reinterpret_cast<char *>(&num_states_),
+             sizeof(num_states_));
+    os.write(reinterpret_cast<char *>(&num_actions_),
+             sizeof(num_actions_));
 
     for(int i = 0; i < num_states_; ++i) {
         os.write(reinterpret_cast<char *>(q_values_[i]),
@@ -138,10 +145,13 @@ void Agent::read_q(const char *file)
     release_q();
     alloc_q();
 
-    is.exceptions(std::ifstream::failbit | std::ofstream::badbit);
+    is.exceptions(std::ifstream::failbit |
+                  std::ofstream::badbit);
 
-    is.read(reinterpret_cast<char *>(&num_states_), sizeof(num_states_));
-    is.read(reinterpret_cast<char *>(&num_actions_), sizeof(num_actions_));
+    is.read(reinterpret_cast<char *>(&num_states_),
+            sizeof(num_states_));
+    is.read(reinterpret_cast<char *>(&num_actions_),
+            sizeof(num_actions_));
 
     for(int i = 0; i < num_states_; ++i) {
         is.read(reinterpret_cast<char *>(q_values_[i]),
@@ -165,18 +175,21 @@ void Agent::play_one_episode(GameFunc f)
     } while(playable);
 }
 
-int Agent::select_action(int cur_state, double greedy_prob, bool debug)
+int Agent::select_action(int cur_state, double greedy_prob,
+                         bool debug)
 {
     int act;
     if(greedy_act_dis_(gen_) <= greedy_prob) {
         act = select_action_greedily(cur_state);
         if(debug) {
-            std::cout << "select greedy act=" << act << std::endl;
+            std::cout << "select greedy act=" << act
+                      << std::endl;
         }
     } else {
         act = select_action_randomly(cur_state);
         if(debug) {
-            std::cout << "select random act=" << act << std::endl;
+            std::cout << "select random act=" << act
+                      << std::endl;
         }
     }
     return act;

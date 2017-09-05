@@ -5,16 +5,10 @@
 
 int main()
 {
-
-/*    char key[50];
-    char type[2];
-    bool mandatory;
-    void *buffer;
-    CheckFunc check;*/
-/*intkey = 1234
-  strkey= str
-doublekey= 123.5
-probkey=0.8*/
+    /* intkey = 1234
+       strkey= str
+       doublekey= 123.5
+       probkey=0.8 */
 
     int i = 0;
     char s[10];
