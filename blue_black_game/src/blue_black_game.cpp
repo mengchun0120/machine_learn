@@ -1,6 +1,119 @@
+#include <cstring>
 #include <stdexcept>
 #include <iostream>
 #include <blue_black_game.hpp>
+#include <conf_parser.hpp>
+
+BlueBlackGame::Config::Config(const char *conf_file)
+{
+    init(conf_file);
+}
+
+BlueBlackGame::Config::init(const char *conf_file)
+{
+         int board_width;
+        int board_height;
+        Point blue_pos;
+        Point hole_pos;
+        Point start_pos;
+        double wind_prob;
+        char wind_direct[10];
+   std::vector<ParamConfig> cfgs{
+        ParamConfig("board_width",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_width),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("blue_pos_x",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&blue_pos.x),
+                    lbound_check<int,false>(0)),
+        ParamConfig("blue_pos_y",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&blue_pos.y),
+                    lbound_check<int,false>(0)),
+        ParamConfig("hole_pos_x",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&hole_pos.x),
+                    lbound_check<int,false>(0)),
+        ParamConfig("hole_pos_y",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&hole_pos.y),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+        ParamConfig("board_height",
+                    ParamConfig::PARAM_INT,
+                    true,
+                    reinterpret_cast<void *>(&board_height),
+                    lbound_check<int,false>(0)),
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+}
+
+bool BlueBlackGame::valid_direct(const void *direct)
+{
+    static std::vector<const char *> valid_dir{
+        "UP", "DOWN", "RIGHT", "LEFT"
+    };
+    bool valid = false;
+
+    for(auto it = valid_dir.begin(); it != valid_dir.end();
+        ++it) {
+
+        if(strcmp(*it,
+            reinterpret_cast<const char *>(direct)) == 0) {
+
+            valid = true;
+            break;
+        }
+    }
+
+    return valid;
+}
 
 BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx,
                              int start_pos_idx, double wind_prob,

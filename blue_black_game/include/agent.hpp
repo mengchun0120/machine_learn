@@ -9,13 +9,27 @@ class AgentConfig;
 
 class Agent {
 public:
+    struct Config {
+        Config(const char *conf_file);
+
+        void init(const char *conf_file);
+
+        int num_episodes;
+        double q_init_max;
+        double lambda;
+        double learn_rate;
+        double greedy_prob;
+        int debug_steps;
+        bool random_init;
+    };
+
     typedef std::function<void(int,int,double,int)> GameFunc;
 
     Agent(Game *game);
 
     virtual ~Agent();
 
-    void learn(const AgentConfig* cfg);
+    void learn(const Config* cfg);
 
     void save_q(const char *file);
 

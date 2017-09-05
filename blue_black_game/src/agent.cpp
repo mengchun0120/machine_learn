@@ -5,7 +5,43 @@
 #include <math.h>
 #include <agent.hpp>
 #include <game.hpp>
-#include <agent_config.hpp>
+#include <conf_parser.hpp>
+
+Agent::Config::Config(const char *conf_file)
+{
+    init(conf_file);
+}
+
+void Agent::Config::init(const char *conf_file)
+{
+    q_init_max = 0.1;
+    debug_steps = 50;
+
+    std::vector<ParamConfig> cfgs{
+        ParamConfig("num_episodes", ParamConfig::INT_PARAM,
+              true, reinterpret_cast<void *>(&num_episodes),
+              lbound_check<int,false>(0)),
+        ParamConfig("q_init_max", ParamConfig::DOUBLE_PARAM,
+              false, reinterpret_cast<void *>(&q_init_max),
+              lbound_check<double,false>(0.0)),
+        ParamConfig("lambda", ParamConfig::DOUBLE_PARAM,
+              true, reinterpret_cast<void *>(&lambda),
+              lbound_check<double,false>(0.0)),
+        ParamConfig("learn_rate", ParamConfig::DOUBLE_PARAM,
+              true, reinterpret_cast<void *>(&learn_rate),
+              lbound_check<double,false>(0.0)),
+        ParamConfig("greedy_prob", ParamConfig::DOUBLE_PARAM,
+              true, reinterpret_cast<void *>(&greedy_prob),
+              lbound_check<double,false>(0.0) &&
+              ubound_check<double,false>(1.0)),
+        ParamConfig("debug_steps", ParamConfig::INT_PARAM,
+              false, reinterpret_cast<void *>(&debug_steps),
+              lbound_check<int,false>(0))
+    };
+
+    ConfParser parser(&cfgs);
+    parser.read_config(conf_file);
+}
 
 Agent::Agent(Game *game):
     game_(game),
@@ -52,7 +88,7 @@ void Agent::init_q(double q_max)
     }
 }
 
-void Agent::learn(const AgentConfig *cfg)
+void Agent::learn(const Agent::Config *cfg)
 {
     int act, next_state, cur_state;
     double reward;
@@ -62,10 +98,8 @@ void Agent::learn(const AgentConfig *cfg)
 
     double abs_delta;
 
-    for(int episode = 0; episode < cfg->num_episodes; 
+    for(int episode = 0; episode < cfg->num_episodes;
         ++episode) {
-
-        std::cout << "ep " << episode << std::endl;
 
         int num_steps = 0;
         bool debug;
