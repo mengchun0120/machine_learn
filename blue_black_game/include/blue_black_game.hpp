@@ -42,6 +42,8 @@ public:
         LEFT
     };
 
+    static const std::vector<const char *> ACT_STRINGS;
+
     struct Config {
         Config(const char *conf_file);
 
@@ -57,6 +59,8 @@ public:
     };
 
     static bool valid_direct(const void *direct);
+
+    static Action str_to_act(const char *direct);
 
     constexpr static int BOARD_WIDTH = 4;
     constexpr static int BOARD_HEIGHT = 4;

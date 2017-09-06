@@ -14,10 +14,10 @@ void BlueBlackGame::Config::init(const char *conf_file)
    std::vector<ParamConfig> cfgs{
         ParamConfig("board_width", ParamConfig::INT_PARAM,
             true,reinterpret_cast<void *>(&board_width),
-            lbound_check<int,false>(0)),
+            lbound_check<int,false>(4)),
         ParamConfig("board_height", ParamConfig::INT_PARAM,
             true, reinterpret_cast<void *>(&board_height),
-            lbound_check<int,false>(0)),
+            lbound_check<int,false>(4)),
         ParamConfig("blue_pos_x", ParamConfig::INT_PARAM,
             true, reinterpret_cast<void *>(&blue_pos.x),
             lbound_check<int,false>(0)),
@@ -37,25 +37,27 @@ void BlueBlackGame::Config::init(const char *conf_file)
             true, reinterpret_cast<void *>(&board_height),
             lbound_check<int,false>(0)),
         ParamConfig("wind_prob", ParamConfig::DOUBLE_PARAM,
-            true, reinterpret_cast<void *>(&board_height),
+            true, reinterpret_cast<void *>(&wind_prob),
             lbound_check<double,false>(0.0) &&
             ubound_check<double,false>(1.0)),
         ParamConfig("wind_direct", ParamConfig::STRING_PARAM,
-            true, reinterpret_cast<void *>(&board_height))
+            true, reinterpret_cast<void *>(&wind_direct),
+            CheckFunc(BlueBlackGame::valid_direct))
     };
 
     ConfParser parser(&cfgs);
     parser.read_config(conf_file);
 }
 
+const std::vector<const char *> BlueBlackGame::ACT_STRINGS{
+    "UP", "DOWN", "RIGHT", "LEFT"
+};
+
 bool BlueBlackGame::valid_direct(const void *direct)
 {
-    static std::vector<const char *> valid_dir{
-        "UP", "DOWN", "RIGHT", "LEFT"
-    };
     bool valid = false;
 
-    for(auto it = valid_dir.begin(); it != valid_dir.end();
+    for(auto it = ACT_STRINGS.begin(); it != ACT_STRINGS.end();
         ++it) {
 
         if(strcmp(*it,
@@ -67,6 +69,11 @@ bool BlueBlackGame::valid_direct(const void *direct)
     }
 
     return valid;
+}
+
+Action BlueBlackGame::str_to_act(const char *direct)
+{
+    
 }
 
 BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx,
