@@ -7,10 +7,11 @@
 class BlueBlackGame: public Game {
 public:
     enum Action {
-        UP,
-        DOWN,
-        RIGHT,
-        LEFT
+        ACT_UP,
+        ACT_DOWN,
+        ACT_RIGHT,
+        ACT_LEFT,
+        ACT_INVALID
     };
 
     static const std::vector<const char *> ACT_STRINGS;
@@ -33,14 +34,6 @@ public:
         double wind_prob;
         char wind_direct[10];
     };
-
-    static Point to_point(int pos_idx)
-    {
-        Point p;
-        p.x = pos_idx % BOARD_WIDTH;
-        p.y = pos_idx / BOARD_WIDTH;
-        return p;
-    }
 
     static bool valid_act(int act)
     {

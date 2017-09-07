@@ -108,40 +108,20 @@ bool BlueBlackGame::valid_direct_str(const char *str)
 
 Action BlueBlackGame::str_to_act(const char *direct)
 {
-    
+    Action a = INVALID;
+
+    for(int i = 0; i < ACT_COUNT; ++i) {
+        if(strcmp(ACT_STRINGS[i], direct) {
+            a = static_cast<Action>(i);
+            break;
+        }
+    }
+
+    return a;
 }
 
-BlueBlackGame::BlueBlackGame(int blue_pos_idx, int hole_pos_idx,
-                             int start_pos_idx, double wind_prob,
-                             int wind_direct):
-    Game(BOARD_SIZE, 4),
-    rd_(),
-    dis_(0.0, 1.0)
+BlueBlackGame::BlueBlackGame(const BlackBlueGame::Config& cfg)
 {
-    if(!valid_pos_idx(blue_pos_idx) ||
-       !valid_pos_idx(hole_pos_idx) ||
-       !valid_pos_idx(start_pos_idx)) {
-        throw std::runtime_error("Invalid blue_pos_idx or hole_pos_idx"
-                                 " or start_pos_idx");
-    }
-
-    if(blue_pos_idx == hole_pos_idx ||
-       blue_pos_idx == start_pos_idx ||
-       hole_pos_idx == start_pos_idx) {
-        throw std::runtime_error("Overlapping blue_pos_idx, hole_pos_idx"
-                                 " or start_pos_idx");
-    }
-
-    blue_pos_ = to_point(blue_pos_idx);
-    hole_pos_ = to_point(hole_pos_idx);
-    start_pos_ = to_point(start_pos_idx);
-
-    if(wind_prob <= 0.0 && wind_prob > 1.0) {
-        throw std::runtime_error("Invalid wind_prob");
-    }
-
-    wind_prob_ = wind_prob;
-
     reset();
 }
 
