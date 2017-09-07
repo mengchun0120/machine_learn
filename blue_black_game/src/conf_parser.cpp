@@ -5,16 +5,25 @@
 #include <utils.hpp>
 #include <conf_parser.hpp>
 
-ConfParser::ConfParser(std::vector<ParamConfig> *configs)
+ConfParser::ConfParser(ParamConfig *configs, int count)
 {
-    if(!configs) {
-        throw std::runtime_error("configs is null");
-    }
-    configs_ = configs;
+    set_config(configs, count);
 }
 
-ConfParser::~ConfParser()
+void ConfParser::set_config(ParamConfig *configs, int count)
 {
+     if(!configs) {
+        throw std::runtime_error("ConfParser::ConfParser "\
+                                 "configs is null");
+    }
+
+    if(count <= 0) {
+         throw std::runtime_error("ConfParser::ConfParser "\
+                                  "count is invalid");
+    }
+
+    configs_ = configs;
+    count_ = count;
 }
 
 void ConfParser::read_config(const char *conf_file)
@@ -27,8 +36,8 @@ void ConfParser::read_config(const char *conf_file)
     for(int i = 0; next(is); ++i) {
         cfg = find_config(key_);
         if(!cfg) {
-            printf("unrecognized: %s\n", key_);
-            throw std::runtime_error("Unrecognized key");
+            throw std::runtime_error("ConfParser::"\
+                        "read_config Unrecognized key");
         }
 
         cfg->read_val(val_);
@@ -73,36 +82,37 @@ bool ConfParser::next(std::ifstream& is)
 
 void ConfParser::reset()
 {
-    for(auto it = configs_->begin();
-        it != configs_->end(); ++it) {
+    ParamConfig *c = configs_;
 
-        it->reset();
+    for(int i = 0; i < count_; ++i, ++c) {
+        c->reset();
     }
 }
 
 ParamConfig *ConfParser::find_config(const char *key)
 {
-    ParamConfig *cfg = nullptr;
+    ParamConfig *ret = nullptr;
+    ParamConfig *c = configs_;
 
-    for(auto it = configs_->begin();
-        it != configs_->end(); ++it) {
-
-        if(it->match(key)) {
-            cfg = &(*it);
+    for(int i = 0; i < count_; ++i, ++c) {
+        if(c->match(key)) {
+            ret = c;
             break;
         }
     }
 
-    return cfg;
+    return ret;
 }
 
 void ConfParser::check_read()
 {
-    for(auto it = configs_->begin();
-        it != configs_->end(); ++it) {
+    ParamConfig *c = configs_;
 
-        if(it->mandatory() && !it->valid()) {
-            throw std::runtime_error("Mandatory not read");
+    for(int i = 0; i < count_; ++i, ++c) {
+        if(c->mandatory() && !c->valid()) {
+            throw std::runtime_error("ConfParser::check_read "\
+                                     "mandatory not read");
         }
     }
 }
+

@@ -4,35 +4,6 @@
 #include <random>
 #include <game.hpp>
 
-struct Point {
-    Point(int x=0, int y=0)
-    {
-        this->x = x;
-        this->y = y;
-    }
-
-    Point(const Point& p):
-        x(p.x), y(p.y)
-    {
-
-    }
-
-    Point& operator=(const Point& p)
-    {
-        x = p.x;
-        y = p.y;
-        return *this;
-    }
-
-    bool operator==(const Point& p)
-    {
-        return x == p.x && y == p.y;
-    }
-
-    int x;
-    int y;
-};
-
 class BlueBlackGame: public Game {
 public:
     enum Action {
@@ -45,32 +16,23 @@ public:
     static const std::vector<const char *> ACT_STRINGS;
 
     struct Config {
+        static constexpr int MIN_WIDTH = 4;
+        static constexpr int MIN_HEIGHT = 4;
+
         Config(const char *conf_file);
 
         void init(const char *conf_file);
 
-        int board_width;
-        int board_height;
+        bool check();
+
+        int width;
+        int height;
         Point blue_pos;
         Point hole_pos;
         Point start_pos;
         double wind_prob;
         char wind_direct[10];
     };
-
-    static bool valid_direct(const void *direct);
-
-    static Action str_to_act(const char *direct);
-
-    constexpr static int BOARD_WIDTH = 4;
-    constexpr static int BOARD_HEIGHT = 4;
-    constexpr static int BOARD_SIZE =
-                                BOARD_WIDTH * BOARD_HEIGHT;
-
-    static bool valid_pos_idx(int pos_idx)
-    {
-        return pos_idx >= 0 && pos_idx < BOARD_SIZE;
-    }
 
     static Point to_point(int pos_idx)
     {
@@ -80,18 +42,12 @@ public:
         return p;
     }
 
-    static int to_pos_idx(const Point& p)
-    {
-        return p.y * BOARD_WIDTH + p.x;
-    }
-
     static bool valid_act(int act)
     {
         return act >= UP && act <= LEFT;
     }
 
-    BlueBlackGame(int blue_pos_idx, int hole_pos_idx, int start_pos_idx,
-                  double wind_prob, int wind_direct);
+    BlueBlackGame(const Config& cfg);
 
     void reset();
 

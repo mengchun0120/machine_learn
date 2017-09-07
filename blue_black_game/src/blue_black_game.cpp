@@ -1,8 +1,10 @@
 #include <cstring>
+#include <cstdlib>
 #include <stdexcept>
 #include <iostream>
 #include <blue_black_game.hpp>
 #include <conf_parser.hpp>
+#include <utils.hpp>
 
 BlueBlackGame::Config::Config(const char *conf_file)
 {
@@ -11,58 +13,91 @@ BlueBlackGame::Config::Config(const char *conf_file)
 
 void BlueBlackGame::Config::init(const char *conf_file)
 {
-   std::vector<ParamConfig> cfgs{
-        ParamConfig("board_width", ParamConfig::INT_PARAM,
-            true,reinterpret_cast<void *>(&board_width),
-            lbound_check<int,false>(4)),
-        ParamConfig("board_height", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&board_height),
-            lbound_check<int,false>(4)),
-        ParamConfig("blue_pos_x", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&blue_pos.x),
-            lbound_check<int,false>(0)),
-        ParamConfig("blue_pos_y", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&blue_pos.y),
-            lbound_check<int,false>(0)),
-        ParamConfig("hole_pos_x", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&hole_pos.x),
-            lbound_check<int,false>(0)),
-        ParamConfig("hole_pos_y", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&hole_pos.y),
-            lbound_check<int,false>(0)),
-        ParamConfig("start_pos_x", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&board_height),
-            lbound_check<int,false>(0)),
-        ParamConfig("start_pos_y", ParamConfig::INT_PARAM,
-            true, reinterpret_cast<void *>(&board_height),
-            lbound_check<int,false>(0)),
-        ParamConfig("wind_prob", ParamConfig::DOUBLE_PARAM,
-            true, reinterpret_cast<void *>(&wind_prob),
-            lbound_check<double,false>(0.0) &&
-            ubound_check<double,false>(1.0)),
-        ParamConfig("wind_direct", ParamConfig::STRING_PARAM,
-            true, reinterpret_cast<void *>(&wind_direct),
-            CheckFunc(BlueBlackGame::valid_direct))
+    ParamConfig cfgs[] = {
+        ParamConfig("width", true,
+                    reinterpret_cast<void *>(&width),
+                    assign_int),
+        ParamConfig("height", true,
+                    reinterpret_cast<void *>(&board_height),
+                    assign_int),
+        ParamConfig("blue_pos", true,
+                    reinterpret_cast<void *>(&blue_pos),
+                    assign_point),
+        ParamConfig("hole_pos", true,
+                    reinterpret_cast<void *>(&hole_pos),
+                    assign_point),
+        ParamConfig("start_pos", true,
+                    reinterpret_cast<void *>(&start_pos),
+                    assign_point),
+        ParamConfig("wind_prob", true,
+                    reinterpret_cast<void *>(&wind_prob),
+                    assign_double),
+        ParamConfig("wind_direct", true,
+                    reinterpret_cast<void *>(&wind_direct),
+                    assign_double)
     };
 
     ConfParser parser(&cfgs);
     parser.read_config(conf_file);
+
+    check();
 }
 
-const std::vector<const char *> BlueBlackGame::ACT_STRINGS{
+void BlueBlackGame::Config::check()
+{
+    if(width < MIN_WIDTH) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check width too small");
+    }
+
+    if(height < MIN_HEIGHT) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check height too small");
+    }
+
+    if(!check_point(blue_pos)) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check blue_pos is invalid");
+    }
+
+    if(!check_point(hole_pos)) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check hole_pos is invalid");
+    }
+
+    if(!check_point(start_pos)) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check start_pos is invalid");
+    }
+
+    if(!BlueBlackGame::valid_direct_str(wind_direct)) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check wind_direct is invalid");
+    }
+
+    if(wind_prob <= 0.0 || wind_prob >= 1.0) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check wind_prob is invalid");
+    }
+}
+
+bool BlueBlackGame::Config::check_point(const Point& p)
+{
+    return (p.x >= 0 && p.x < width &&
+            p.y >= 0 && p.y < height);
+}
+
+
+const char *BlueBlackGame::ACT_STRINGS[] = {
     "UP", "DOWN", "RIGHT", "LEFT"
 };
 
-bool BlueBlackGame::valid_direct(const void *direct)
+bool BlueBlackGame::valid_direct_str(const char *str)
 {
     bool valid = false;
 
-    for(auto it = ACT_STRINGS.begin(); it != ACT_STRINGS.end();
-        ++it) {
-
-        if(strcmp(*it,
-            reinterpret_cast<const char *>(direct)) == 0) {
-
+    for(int i = 0; i != ACT_COUNT; ++i) {
+        if(strcmp(ACT_STRINGS[i], str) == 0) {
             valid = true;
             break;
         }

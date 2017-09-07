@@ -1,40 +1,19 @@
 #ifndef __PARAM_CONFIG_HPP__
 #define __PARAM_CONFIG_HPP__
 
-#include <functional>
-#include <utility>
-#include <cstring>
-#include <vector>
-#include <check_func.hpp>
+#include <assign_func.hpp>
 
 class ParamConfig {
 public:
-    enum ParamType {
-        PARAM_MIN = 0,
-        INT_PARAM = PARAM_MIN,
-        DOUBLE_PARAM,
-        STRING_PARAM,
-        PARAM_MAX = STRING_PARAM
-    };
-
-    typedef std::function<void(const char *, void *)>
-            AssignFunc;
-
-    static void assign_int(const char *val, void *buffer);
-
-    static void assign_double(const char *val, void *buffer);
-
-    static void assign_str(const char *val, void *buffer);
-
-    static const std::vector<AssignFunc> ASSIGN_FUNCS;
-
     static constexpr int KEY_LEN = 50;
 
-    ParamConfig(const char *key, ParamType type,
-                bool mandatory, void *buffer,
-                const CheckFunc& check=nullptr);
+    ParamConfig(const char *key, bool mandatory, void *buffer,
+                AssignFunc assign_func);
 
-    bool read_val(const char *v);
+    void read_val(const char *v)
+    {
+        assign_func_(v, buffer);
+    }
 
     const bool match(const char *key) const
     {
@@ -44,11 +23,6 @@ public:
     const char *key() const
     {
         return key_;
-    }
-
-    ParamType type() const
-    {
-        return type_;
     }
 
     bool mandatory() const
@@ -73,11 +47,10 @@ public:
 
 private:
     char key_[KEY_LEN];
-    ParamType type_;
     bool mandatory_;
     void *buffer_;
-    CheckFunc check_;
     bool valid_;
+    AssignFunc assign_func_;
 };
 
 #endif
