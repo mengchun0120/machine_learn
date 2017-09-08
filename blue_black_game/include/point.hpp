@@ -20,7 +20,7 @@ struct Point {
 
     Point& from_str(const char *str);
 
-    Point& operator=(const Point& p) const
+    Point& operator=(const Point& p)
     {
         x = p.x;
         y = p.y;

@@ -1,6 +1,7 @@
 #ifndef __PARAM_CONFIG_HPP__
 #define __PARAM_CONFIG_HPP__
 
+#include <cstring>
 #include <assign_func.hpp>
 
 class ParamConfig {
@@ -12,7 +13,8 @@ public:
 
     void read_val(const char *v)
     {
-        assign_func_(v, buffer);
+        (*assign_func_)(v, buffer_);
+        read_ = true;
     }
 
     const bool match(const char *key) const
@@ -35,21 +37,21 @@ public:
         return buffer_;
     }
 
-    const bool valid() const
+    const bool read() const
     {
-        return valid_;
+        return read_;
     }
 
     void reset()
     {
-        valid_ = false;
+        read_ = false;
     }
 
 private:
     char key_[KEY_LEN];
     bool mandatory_;
     void *buffer_;
-    bool valid_;
+    bool read_;
     AssignFunc assign_func_;
 };
 

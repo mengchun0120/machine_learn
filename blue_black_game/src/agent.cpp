@@ -15,32 +15,70 @@ Agent::Config::Config(const char *conf_file)
 void Agent::Config::init(const char *conf_file)
 {
     q_init_max = 0.1;
+    lambda = 1.0;
     debug_steps = 50;
 
-    std::vector<ParamConfig> cfgs{
-        ParamConfig("num_episodes", ParamConfig::INT_PARAM,
-              true, reinterpret_cast<void *>(&num_episodes),
-              lbound_check<int,false>(0)),
-        ParamConfig("q_init_max", ParamConfig::DOUBLE_PARAM,
-              false, reinterpret_cast<void *>(&q_init_max),
-              lbound_check<double,false>(0.0)),
-        ParamConfig("lambda", ParamConfig::DOUBLE_PARAM,
-              true, reinterpret_cast<void *>(&lambda),
-              lbound_check<double,false>(0.0)),
-        ParamConfig("learn_rate", ParamConfig::DOUBLE_PARAM,
-              true, reinterpret_cast<void *>(&learn_rate),
-              lbound_check<double,false>(0.0)),
-        ParamConfig("greedy_prob", ParamConfig::DOUBLE_PARAM,
-              true, reinterpret_cast<void *>(&greedy_prob),
-              lbound_check<double,false>(0.0) &&
-              ubound_check<double,false>(1.0)),
-        ParamConfig("debug_steps", ParamConfig::INT_PARAM,
-              false, reinterpret_cast<void *>(&debug_steps),
-              lbound_check<int,false>(0))
+    ParamConfig cfgs[] = {
+        ParamConfig("num_episodes", true,
+                    reinterpret_cast<void *>(&num_episodes),
+                    assign_int),
+        ParamConfig("q_init_max", false,
+                    reinterpret_cast<void *>(&q_init_max),
+                    assign_double),
+        ParamConfig("lambda", false,
+                    reinterpret_cast<void *>(&lambda),
+                    assign_double),
+        ParamConfig("learn_rate", true,
+                    reinterpret_cast<void *>(&learn_rate),
+                    assign_double),
+        ParamConfig("greedy_prob", true,
+                    reinterpret_cast<void *>(&greedy_prob),
+                    assign_double),
+        ParamConfig("debug_steps", false,
+                    reinterpret_cast<void *>(&debug_steps),
+                    assign_int)
     };
 
-    ConfParser parser(&cfgs);
+    int count = static_cast<int>(sizeof(cfgs) /
+                                 sizeof(ParamConfig));
+
+    ConfParser parser(cfgs, count);
     parser.read_config(conf_file);
+
+    check();
+}
+
+void Agent::Config::check()
+{
+    if(num_episodes <= 0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid num_episodes");
+    }
+
+    if(q_init_max <= 0.0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid q_init_max");
+    }
+
+    if(lambda <= 0.0 || lambda > 1.0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid lambda");
+    }
+
+    if(learn_rate <= 0.0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid learn_rate");
+    }
+
+    if(greedy_prob <= 0.0 || greedy_prob >= 1.0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid greedy_prob");
+    }
+
+    if(debug_steps <= 0) {
+        throw std::runtime_error("Agent::Config::check "\
+                                 "invalid debug_steps");
+    }
 }
 
 Agent::Agent(Game *game):
@@ -97,12 +135,11 @@ void Agent::learn(const Agent::Config *cfg)
     if(cfg->random_init) init_q(cfg->q_init_max);
 
     double abs_delta;
+    int num_steps;
+    bool debug;
 
-    for(int episode = 0; episode < cfg->num_episodes;
-        ++episode) {
-
-        int num_steps = 0;
-        bool debug;
+    for(int e = 0; e < cfg->num_episodes; ++e) {
+        num_steps = 0;
 
         game_->reset();
         cur_state = game_->cur_state();
@@ -125,7 +162,7 @@ void Agent::learn(const Agent::Config *cfg)
                                cfg->learn_rate,
                                debug || !playable);
             cur_state = next_state;
-        } while(playable && abs_delta > 1.0e-6);
+        } while(playable);
     }
 }
 

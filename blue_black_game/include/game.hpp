@@ -10,7 +10,8 @@ public:
 
     virtual void reset() = 0;
 
-    virtual bool action(int act, double& reward, int& next_state) = 0;
+    virtual bool action(int act, double& reward,
+                        int& next_state) = 0;
 
     int num_states() const
     {

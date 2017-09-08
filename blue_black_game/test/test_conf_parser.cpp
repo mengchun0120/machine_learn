@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <conf_parser.hpp>
+#include <assign_func.hpp>
 
 int main()
 {
@@ -15,25 +16,25 @@ int main()
     double d = 0.0;
     double p = 0.0;
 
-    std::vector<ParamConfig> configs = {
-        ParamConfig("intkey", ParamConfig::INT_PARAM,
-                    true, reinterpret_cast<void *>(&i),
-                    lbound_check<int, false>(0)),
-
-        ParamConfig("strkey", ParamConfig::STRING_PARAM,
-                    true, reinterpret_cast<void *>(s)),
-
-        ParamConfig("doublekey", ParamConfig::DOUBLE_PARAM,
-                    true, reinterpret_cast<void *>(&d),
-                    lbound_check<double, false>(0.0)),
-
-        ParamConfig("probkey", ParamConfig::DOUBLE_PARAM, 
-                    true, reinterpret_cast<void *>(&p),
-                    lbound_check<double, false>(0.0) &&
-                    ubound_check<double, false>(1.0))
+    ParamConfig configs[] = {
+        ParamConfig("intkey", true,
+                    reinterpret_cast<void *>(&i),
+                    assign_int),
+        ParamConfig("strkey", true,
+                    reinterpret_cast<void *>(s),
+                    assign_str),
+        ParamConfig("doublekey", true,
+                    reinterpret_cast<void *>(&d),
+                    assign_double),
+        ParamConfig("probkey", true,
+                    reinterpret_cast<void *>(&p),
+                    assign_double)
     };
 
-    ConfParser parser(&configs);
+    int count = static_cast<int>(sizeof(configs)/
+                                 sizeof(ParamConfig));
+
+    ConfParser parser(configs, count);
     parser.read_config("test/test.conf");
 
     assert(i == 1234);

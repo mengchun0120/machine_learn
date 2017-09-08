@@ -14,6 +14,8 @@ public:
 
         void init(const char *conf_file);
 
+        void check();
+
         int num_episodes;
         double q_init_max;
         double lambda;

@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <assign_func.hpp>
 #include <point.hpp>
 #include <utils.hpp>
@@ -20,10 +21,10 @@ void assign_str(const char *val, void *buffer)
     strcpy(reinterpret_cast<char *>(buffer), val);
 }
 
-void assign_point(const char *val, void *buffer);
+void assign_point(const char *val, void *buffer)
 {
     char s[strlen(val)+1];
-    strcpy(s, str);
+    strcpy(s, val);
 
     char *p = strchr(s, ',');
     if(!p) {
@@ -46,9 +47,9 @@ void assign_point(const char *val, void *buffer);
                                  "Invalid y");
     }
 
-    Point *p = reinterpret_cast<Point *>(buffer);
+    Point *pt = reinterpret_cast<Point *>(buffer);
 
-    p->x = atoi(s);
-    p->y = atoi(p);
+    pt->x = atoi(s);
+    pt->y = atoi(p);
 }
 

@@ -2,7 +2,6 @@
 #define __CONF_PARSER_HPP__
 
 #include <fstream>
-#include <check_func.hpp>
 #include <param_config.hpp>
 
 class ConfParser {
@@ -13,7 +12,8 @@ public:
 
     ConfParser(ParamConfig *configs, int count);
 
-    virtual ~ConfParser();
+    virtual ~ConfParser()
+    {}
 
     void set_config(ParamConfig *configs, int count);
 

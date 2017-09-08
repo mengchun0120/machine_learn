@@ -109,7 +109,7 @@ void ConfParser::check_read()
     ParamConfig *c = configs_;
 
     for(int i = 0; i < count_; ++i, ++c) {
-        if(c->mandatory() && !c->valid()) {
+        if(c->mandatory() && !c->read()) {
             throw std::runtime_error("ConfParser::check_read "\
                                      "mandatory not read");
         }

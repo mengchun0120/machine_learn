@@ -3,6 +3,7 @@
 
 #include <random>
 #include <game.hpp>
+#include <point.hpp>
 
 class BlueBlackGame: public Game {
 public:
@@ -14,7 +15,8 @@ public:
         ACT_INVALID
     };
 
-    static const std::vector<const char *> ACT_STRINGS;
+    static constexpr int ACT_COUNT = 4;
+    static const char *ACT_STRINGS[ACT_COUNT];
 
     struct Config {
         static constexpr int MIN_WIDTH = 4;
@@ -24,7 +26,9 @@ public:
 
         void init(const char *conf_file);
 
-        bool check();
+        void check();
+
+        bool check_point(const Point& p);
 
         int width;
         int height;
@@ -35,9 +39,11 @@ public:
         char wind_direct[10];
     };
 
+    static Action str_to_act(const char *act_str);
+
     static bool valid_act(int act)
     {
-        return act >= UP && act <= LEFT;
+        return act >= 0 && act < ACT_COUNT;
     }
 
     BlueBlackGame(const Config& cfg);
@@ -48,16 +54,23 @@ public:
 
     int cur_state() const
     {
-        return to_pos_idx(cur_pos_);
+        return get_state(cur_pos_);
+    }
+
+    int get_state(const Point& p) const
+    {
+        return p.y * width_ + p.x;
     }
 
 protected:
+    int width_;
+    int height_;
     Point blue_pos_;
     Point hole_pos_;
     Point start_pos_;
     Point cur_pos_;
     double wind_prob_;
-    int wind_direct_;
+    Action wind_direct_;
     bool playable_;
     std::random_device rd_;
     std::mt19937 gen_;

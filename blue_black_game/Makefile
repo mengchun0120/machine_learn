@@ -8,9 +8,10 @@ OBJECTS = $(SRC_BUILD_DIR)/game.o \
           $(SRC_BUILD_DIR)/blue_black_game.o \
           $(SRC_BUILD_DIR)/agent.o \
           $(SRC_BUILD_DIR)/utils.o \
-          $(SRC_BUILD_DIR)/check_func.o \
           $(SRC_BUILD_DIR)/param_config.o \
-          $(SRC_BUILD_DIR)/conf_parser.o 
+          $(SRC_BUILD_DIR)/point.o \
+          $(SRC_BUILD_DIR)/assign_func.o \
+          $(SRC_BUILD_DIR)/conf_parser.o
 TARGET = $(SRC_BUILD_DIR)/bbgame
 TEST_TARGETS = $(TEST_BUILD_DIR)/test_utils \
                $(TEST_BUILD_DIR)/test_conf_parser

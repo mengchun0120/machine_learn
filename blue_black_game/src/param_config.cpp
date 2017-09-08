@@ -1,4 +1,4 @@
-#include <cstring>
+#include <stdexcept>
 #include <param_config.hpp>
 
 ParamConfig::ParamConfig(const char *key, bool mandatory,
@@ -18,6 +18,7 @@ ParamConfig::ParamConfig(const char *key, bool mandatory,
     mandatory_ = mandatory;
     buffer_ = buffer;
     assign_func_ = assign_func;
+    read_ = false;
 }
 
 

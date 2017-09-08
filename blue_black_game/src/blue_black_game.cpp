@@ -18,7 +18,7 @@ void BlueBlackGame::Config::init(const char *conf_file)
                     reinterpret_cast<void *>(&width),
                     assign_int),
         ParamConfig("height", true,
-                    reinterpret_cast<void *>(&board_height),
+                    reinterpret_cast<void *>(&height),
                     assign_int),
         ParamConfig("blue_pos", true,
                     reinterpret_cast<void *>(&blue_pos),
@@ -37,7 +37,10 @@ void BlueBlackGame::Config::init(const char *conf_file)
                     assign_double)
     };
 
-    ConfParser parser(&cfgs);
+    int count = static_cast<int>(sizeof(cfgs) /
+                                 sizeof(ParamConfig));
+
+    ConfParser parser(cfgs, count);
     parser.read_config(conf_file);
 
     check();
@@ -70,7 +73,15 @@ void BlueBlackGame::Config::check()
                         "check start_pos is invalid");
     }
 
-    if(!BlueBlackGame::valid_direct_str(wind_direct)) {
+    if(blue_pos == hole_pos || blue_pos == start_pos ||
+       hole_pos == start_pos) {
+        throw std::runtime_error("BlueBlackGame::Config::"\
+                        "check overlapping blue_pos, "\
+                        "start_pos, hole_pos");
+    }
+
+    if(BlueBlackGame::str_to_act(wind_direct) ==
+       BlueBlackGame::ACT_INVALID) {
         throw std::runtime_error("BlueBlackGame::Config::"\
                         "check wind_direct is invalid");
     }
@@ -92,26 +103,13 @@ const char *BlueBlackGame::ACT_STRINGS[] = {
     "UP", "DOWN", "RIGHT", "LEFT"
 };
 
-bool BlueBlackGame::valid_direct_str(const char *str)
+BlueBlackGame::Action
+BlueBlackGame::str_to_act(const char *act_str)
 {
-    bool valid = false;
-
-    for(int i = 0; i != ACT_COUNT; ++i) {
-        if(strcmp(ACT_STRINGS[i], str) == 0) {
-            valid = true;
-            break;
-        }
-    }
-
-    return valid;
-}
-
-Action BlueBlackGame::str_to_act(const char *direct)
-{
-    Action a = INVALID;
+    Action a = ACT_INVALID;
 
     for(int i = 0; i < ACT_COUNT; ++i) {
-        if(strcmp(ACT_STRINGS[i], direct) {
+        if(strcmp(ACT_STRINGS[i], act_str) == 0) {
             a = static_cast<Action>(i);
             break;
         }
@@ -120,7 +118,16 @@ Action BlueBlackGame::str_to_act(const char *direct)
     return a;
 }
 
-BlueBlackGame::BlueBlackGame(const BlackBlueGame::Config& cfg)
+BlueBlackGame::BlueBlackGame(const BlueBlackGame::Config& cfg):
+    Game(cfg.width * cfg.height, ACT_COUNT),
+    width_(cfg.width),
+    height_(cfg.height),
+    blue_pos_(cfg.blue_pos),
+    hole_pos_(cfg.hole_pos),
+    start_pos_(cfg.start_pos),
+    wind_prob_(cfg.wind_prob),
+    wind_direct_(str_to_act(cfg.wind_direct)),
+    dis_(0.0, 1.0)
 {
     reset();
 }
@@ -132,7 +139,8 @@ void BlueBlackGame::reset()
     playable_ = true;
 }
 
-bool BlueBlackGame::action(int act, double& reward, int& next_state)
+bool BlueBlackGame::action(int act, double& reward,
+                           int& next_state)
 {
     if(!valid_act(act)) {
         throw std::runtime_error("Invalid act");
@@ -156,7 +164,7 @@ bool BlueBlackGame::action(int act, double& reward, int& next_state)
         playable_ = false;
     } else {
         reward = 0.0;
-        next_state = to_pos_idx(cur_pos_);
+        next_state = get_state(cur_pos_);
     }
 
     return playable_;
@@ -165,23 +173,23 @@ bool BlueBlackGame::action(int act, double& reward, int& next_state)
 void BlueBlackGame::move_cur_pos(int act)
 {
     switch(act) {
-    case UP:
+    case ACT_UP:
         if(cur_pos_.y > 0) {
             --(cur_pos_.y);
         }
         break;
-    case DOWN:
-        if(cur_pos_.y < BOARD_HEIGHT - 1) {
+    case ACT_DOWN:
+        if(cur_pos_.y < height_ - 1) {
             ++(cur_pos_.y);
         }
         break;
-    case LEFT:
+    case ACT_LEFT:
         if(cur_pos_.x > 0) {
             --(cur_pos_.x);
         }
         break;
-    case RIGHT:
-        if(cur_pos_.y < BOARD_WIDTH - 1) {
+    case ACT_RIGHT:
+        if(cur_pos_.y < width_ - 1) {
             ++(cur_pos_.x);
         }
         break;
