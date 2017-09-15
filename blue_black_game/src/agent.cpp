@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -17,6 +18,7 @@ void Agent::Config::init(const char *conf_file)
     q_init_max = 0.1;
     lambda = 1.0;
     debug_steps = 50;
+    random_init = true;
 
     ParamConfig cfgs[] = {
         ParamConfig("num_episodes", true,
@@ -134,11 +136,11 @@ void Agent::learn(const Agent::Config *cfg)
 
     if(cfg->random_init) init_q(cfg->q_init_max);
 
-    double abs_delta;
     int num_steps;
     bool debug;
 
     for(int e = 0; e < cfg->num_episodes; ++e) {
+        std::cout << "Agent::learn episode=" << e << std::endl;
         num_steps = 0;
 
         game_->reset();
@@ -155,39 +157,37 @@ void Agent::learn(const Agent::Config *cfg)
             act = select_action(cur_state, cfg->greedy_prob,
                                 debug);
 
-            playable = game_->action(act, reward, next_state);
+            playable = game_->action(act, reward, next_state,
+                                     debug);
 
-            abs_delta = update(cur_state, act, reward,
-                               next_state, cfg->lambda,
-                               cfg->learn_rate,
-                               debug || !playable);
+            update(cur_state, act, reward, next_state,
+                   cfg->lambda, cfg->learn_rate,
+                   debug || !playable);
             cur_state = next_state;
         } while(playable);
     }
 }
 
-double Agent::update(int cur_state, int action, double reward,
-                     int next_state, double lambda,
-                     double learn_rate, bool debug)
+void Agent::update(int cur_state, int action, double reward,
+                   int next_state, double lambda,
+                   double learn_rate, bool debug)
 {
-    double *q = q_values_[next_state];
-    double max_q = q[0];
+    int nxt_act = get_greedy_act(next_state);
+    double max_q = q_values_[next_state][nxt_act];
+    double delta = learn_rate * (reward + lambda * max_q
+                           - q_values_[cur_state][action]);
 
-    for(int i = 1; i < num_actions_; ++i, ++q) {
-        if(*q > max_q) max_q = *q;
-    }
-
-    double delta = learn_rate * (reward + lambda * max_q);
     q_values_[cur_state][action] += delta;
 
     if(debug) {
-        std::cout << "update q_values for state=" << cur_state
-                  << " act=" << action << " delta=" << delta
-                  << " cur_q=" << q_values_[cur_state][action]
+        std::cout << "Agent::update cur_state=" << cur_state
+                  << " act=" << action
+                  << " reward=" << reward
+                  << " next_state=" << next_state
+                  << " delta=" << delta
+                  << " q=" << q_values_[cur_state][action]
                   << std::endl;
     }
-
-    return fabs(delta);
 }
 
 void Agent::save_q(const char *file)
@@ -207,6 +207,8 @@ void Agent::save_q(const char *file)
         os.write(reinterpret_cast<char *>(q_values_[i]),
                  sizeof(double) * num_actions_);
     }
+
+    os.close();
 }
 
 void Agent::read_q(const char *file)
@@ -224,10 +226,18 @@ void Agent::read_q(const char *file)
     is.read(reinterpret_cast<char *>(&num_actions_),
             sizeof(num_actions_));
 
-    for(int i = 0; i < num_states_; ++i) {
+    int i;
+    for(i = 0; i < num_states_ && !is.good(); ++i) {
         is.read(reinterpret_cast<char *>(q_values_[i]),
                 sizeof(double) * num_actions_);
     }
+
+    if(i < num_states_) {
+        throw std::runtime_error("Agent::read_q: "\
+                                 "not enough data read");
+    }
+
+    is.close();
 }
 
 void Agent::play_one_episode(GameFunc f)
@@ -240,7 +250,8 @@ void Agent::play_one_episode(GameFunc f)
     cur_state = game_->cur_state();
     do {
         act = select_action_greedily(cur_state);
-        playable = game_->action(act, reward, next_state);
+        playable = game_->action(act, reward, next_state,
+                                 false);
         if(f) f(cur_state, act, reward, next_state);
         cur_state = next_state;
     } while(playable);
@@ -253,14 +264,16 @@ int Agent::select_action(int cur_state, double greedy_prob,
     if(greedy_act_dis_(gen_) <= greedy_prob) {
         act = select_action_greedily(cur_state);
         if(debug) {
-            std::cout << "select greedy act=" << act
-                      << std::endl;
+            std::cout << "Agent::select_action greedy"
+                      << " cur_state=" << cur_state
+                      << " act=" << act << std::endl;
         }
     } else {
         act = select_action_randomly(cur_state);
         if(debug) {
-            std::cout << "select random act=" << act
-                      << std::endl;
+            std::cout << "Agent::selct_action random"
+                      << " cur_state=" << cur_state
+                      << " act=" << act << std::endl;
         }
     }
     return act;
@@ -268,20 +281,39 @@ int Agent::select_action(int cur_state, double greedy_prob,
 
 int Agent::select_action_greedily(int cur_state)
 {
-    int act = 0;
-    double *q = q_values_[cur_state];
-    double max_q = q[0];
-
-    for(int i = 1; i < num_actions_; ++i) {
-        if(max_q < q[i]) {
-            max_q = q[i];
-            act = i;
-        }
-    }
-    return act;
+   return get_greedy_act(cur_state);
 }
 
 int Agent::select_action_randomly(int cur_state)
 {
-    return random_act_dis_(gen_);
+    int act;
+
+    do{
+        act = random_act_dis_(gen_);
+    } while(!game_->valid_act(cur_state, act));
+
+    return act;
+}
+
+int Agent::get_greedy_act(int state) const
+{
+    assert(game_->valid_state(state));
+
+    double *q = q_values_[state];
+    bool max_set = false;
+    double max_q;
+    int act;
+
+    for(int i = 0; i < num_actions_; ++i) {
+        if(!game_->valid_act(state, i))
+            continue;
+
+        if(!max_set || max_q < q[i]) {
+            max_q = q[i];
+            act = i;
+            max_set = true;
+        }
+    }
+
+    return act;
 }

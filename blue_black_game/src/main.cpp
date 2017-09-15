@@ -84,6 +84,8 @@ void parse_param_play(int argc, char **argv, char *&game_conf,
 
 void train(int argc, char **argv)
 {
+    std::cout << "train\n";
+
     char *game_conf, *agent_conf, *prev_q, *cur_q;
 
     parse_param_train(argc, argv, game_conf, agent_conf,
@@ -142,6 +144,9 @@ int main(int argc, char **argv)
         train(argc, argv);
     } else if(strcmp(argv[1], "play") == 0) {
         play(argc, argv);
+    } else {
+        usage();
+        exit(1);
     }
 }
 

@@ -1,9 +1,10 @@
+CPP=/usr/bin/g++
 INCLUDE_DIR = include
 SRC_DIR = src
 SRC_BUILD_DIR = build/src
 TEST_DIR = test
 TEST_BUILD_DIR = build/test
-CPP_FLAGS = -std=c++11 -O3 -I$(INCLUDE_DIR) -Wall
+CPP_FLAGS = -std=c++11 -g -I$(INCLUDE_DIR) -Wall
 OBJECTS = $(SRC_BUILD_DIR)/game.o \
           $(SRC_BUILD_DIR)/blue_black_game.o \
           $(SRC_BUILD_DIR)/agent.o \
@@ -20,13 +21,13 @@ TEST_TARGETS = $(TEST_BUILD_DIR)/test_utils \
 all: $(TARGET) test
 
 $(SRC_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp
-	g++ -c $(CPP_FLAGS) -o $@ $<
+	$(CPP) -c $(CPP_FLAGS) -o $@ $<
 
 $(TARGET): $(SRC_DIR)/main.cpp $(OBJECTS)
-	g++ $(CPP_FLAGS) -o $@ $^
+	$(CPP) $(CPP_FLAGS) -o $@ $^
 
 $(TEST_BUILD_DIR)/%: $(TEST_DIR)/%.cpp $(OBJECTS)
-	g++ $(CPP_FLAGS) -o $@ $^
+	$(CPP) $(CPP_FLAGS) -o $@ $^
 
 test: $(TEST_TARGETS)
 	sh ./run_test.sh

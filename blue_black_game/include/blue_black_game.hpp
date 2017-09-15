@@ -41,6 +41,11 @@ public:
 
     static Action str_to_act(const char *act_str);
 
+    static const char *act_to_str(Action act)
+    {
+        return ACT_STRINGS[act];
+    }
+
     static bool valid_act(int act)
     {
         return act >= 0 && act < ACT_COUNT;
@@ -50,7 +55,15 @@ public:
 
     void reset();
 
-    bool action(int act, double& reward, int& next_state);
+    bool valid_state(int state) const
+    {
+        return state >= 0 && state < num_states_;
+    }
+
+    bool action(int act, double& reward, int& next_state,
+                bool debug);
+
+    bool valid_act(int state, int act) const;
 
     int cur_state() const
     {
@@ -62,9 +75,17 @@ public:
         return p.y * width_ + p.x;
     }
 
+    const Point& cur_pos() const
+    {
+        return cur_pos_;
+    }
+
+    void get_position(int state, Point& p) const;
+
 protected:
     int width_;
     int height_;
+    int num_states_;
     Point blue_pos_;
     Point hole_pos_;
     Point start_pos_;

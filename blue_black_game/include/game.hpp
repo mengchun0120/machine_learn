@@ -11,7 +11,11 @@ public:
     virtual void reset() = 0;
 
     virtual bool action(int act, double& reward,
-                        int& next_state) = 0;
+                        int& next_state, bool debug) = 0;
+
+    virtual bool valid_act(int state, int act) const = 0;
+
+    virtual bool valid_state(int state) const = 0;
 
     int num_states() const
     {

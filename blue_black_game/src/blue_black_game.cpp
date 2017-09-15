@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
+#include <cassert>
 #include <blue_black_game.hpp>
 #include <conf_parser.hpp>
 #include <utils.hpp>
@@ -34,7 +35,7 @@ void BlueBlackGame::Config::init(const char *conf_file)
                     assign_double),
         ParamConfig("wind_direct", true,
                     reinterpret_cast<void *>(&wind_direct),
-                    assign_double)
+                    assign_str)
     };
 
     int count = static_cast<int>(sizeof(cfgs) /
@@ -82,6 +83,7 @@ void BlueBlackGame::Config::check()
 
     if(BlueBlackGame::str_to_act(wind_direct) ==
        BlueBlackGame::ACT_INVALID) {
+        std::cout << wind_direct << std::endl;
         throw std::runtime_error("BlueBlackGame::Config::"\
                         "check wind_direct is invalid");
     }
@@ -122,6 +124,7 @@ BlueBlackGame::BlueBlackGame(const BlueBlackGame::Config& cfg):
     Game(cfg.width * cfg.height, ACT_COUNT),
     width_(cfg.width),
     height_(cfg.height),
+    num_states_(width_ * height_),
     blue_pos_(cfg.blue_pos),
     hole_pos_(cfg.hole_pos),
     start_pos_(cfg.start_pos),
@@ -140,11 +143,9 @@ void BlueBlackGame::reset()
 }
 
 bool BlueBlackGame::action(int act, double& reward,
-                           int& next_state)
+                           int& next_state, bool debug)
 {
-    if(!valid_act(act)) {
-        throw std::runtime_error("Invalid act");
-    }
+    assert(valid_act(act));
 
     if(!playable_) {
        return false;
@@ -167,7 +168,48 @@ bool BlueBlackGame::action(int act, double& reward,
         next_state = get_state(cur_pos_);
     }
 
+    if(debug) {
+        std::cout << "BlueBlackGame::action act=" << act
+                  << " reward=" << reward << " cur_pos="
+                  << cur_pos_ << std::endl;
+    }
+
     return playable_;
+}
+
+bool BlueBlackGame::valid_act(int state, int act) const
+{
+    assert(valid_act(act) && valid_state(state));
+
+    bool valid = true;
+    Point p;
+
+    get_position(state, p);
+
+    switch(act) {
+    case ACT_UP:
+        valid = (p.y > 0);
+        break;
+    case ACT_DOWN:
+        valid = (p.y < height_ - 1);
+        break;
+    case ACT_LEFT:
+        valid = (p.x > 0);
+        break;
+    case ACT_RIGHT:
+        valid = (p.x < width_ - 1);
+        break;
+    }
+
+    return valid;
+}
+
+void BlueBlackGame::get_position(int state, Point& p) const
+{
+    assert(valid_state(state));
+
+    p.y = state / width_;
+    p.x = state % width_;
 }
 
 void BlueBlackGame::move_cur_pos(int act)
@@ -189,7 +231,7 @@ void BlueBlackGame::move_cur_pos(int act)
         }
         break;
     case ACT_RIGHT:
-        if(cur_pos_.y < width_ - 1) {
+        if(cur_pos_.x < width_ - 1) {
             ++(cur_pos_.x);
         }
         break;

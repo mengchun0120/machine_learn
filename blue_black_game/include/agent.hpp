@@ -39,6 +39,8 @@ public:
 
     void play_one_episode(GameFunc f=nullptr);
 
+    int get_greedy_act(int state) const;
+
 protected:
     void alloc_q();
 
@@ -53,7 +55,7 @@ protected:
     int select_action(int cur_state, double greedy_prob,
                       bool debug=false);
 
-    double update(int cur_state, int action, double reward,
+    void update(int cur_state, int action, double reward,
                   int next_state, double lambda,
                   double learn_rate, bool debug=false);
 
