@@ -153,7 +153,8 @@ bool BlueBlackGame::action(int act, double& reward,
 
     move_cur_pos(act);
 
-    if(dis_(gen_) < wind_prob_) {
+    bool wind = dis_(gen_) < wind_prob_;
+    if(wind) {
         move_cur_pos(wind_direct_);
     }
 
@@ -165,13 +166,14 @@ bool BlueBlackGame::action(int act, double& reward,
         playable_ = false;
     } else {
         reward = 0.0;
-        next_state = get_state(cur_pos_);
     }
+
+    next_state = get_state(cur_pos_);
 
     if(debug) {
         std::cout << "BlueBlackGame::action act=" << act
                   << " reward=" << reward << " cur_pos="
-                  << cur_pos_ << std::endl;
+                  << cur_pos_ << " wind=" << wind << std::endl;
     }
 
     return playable_;

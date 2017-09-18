@@ -4,7 +4,9 @@ SRC_DIR = src
 SRC_BUILD_DIR = build/src
 TEST_DIR = test
 TEST_BUILD_DIR = build/test
-CPP_FLAGS = -std=c++11 -g -I$(INCLUDE_DIR) -Wall
+COMMON_FLAGS = -std=c++11 -I$(INCLUDE_DIR) -Wall
+DEBUG_FLAGS = -g $(COMMON_FLAGS)
+RELEASE_FLAGS = -O3 -DDEBUG $(COMMON_FLAGS)
 OBJECTS = $(SRC_BUILD_DIR)/game.o \
           $(SRC_BUILD_DIR)/blue_black_game.o \
           $(SRC_BUILD_DIR)/agent.o \
@@ -18,7 +20,13 @@ TARGET = $(SRC_BUILD_DIR)/bbgame
 TEST_TARGETS = $(TEST_BUILD_DIR)/test_utils \
                $(TEST_BUILD_DIR)/test_conf_parser
 
-all: $(TARGET) test
+default: debug
+
+debug: CPP_FLAGS = $(DEBUG_FLAGS)
+debug: $(TARGET) test
+
+release: CPP_FLAGS = $(RELEASE_FLAGS)
+release: $(TARGET) test
 
 $(SRC_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.hpp
 	$(CPP) -c $(CPP_FLAGS) -o $@ $<
